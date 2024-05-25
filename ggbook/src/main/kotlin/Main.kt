@@ -1,31 +1,31 @@
 package io.github.hamidsafdari
 
 import org.jsoup.Jsoup
-import java.io.FileOutputStream
+import org.sqlite.SQLiteException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.DriverManager
 
 fun main() {
-    Class.forName("org.sqlite.JDBC")
-    val connection = DriverManager.getConnection("jdbc:sqlite:ggbook.db")
-    val stmt = connection.createStatement()
-    stmt.executeUpdate(
-        """
-            CREATE TABLE if NOT EXISTS definition (
-              id INTEGER PRIMARY KEY autoincrement,
-              entry CHAR(100) NOT NULL,
-              definition text NOT NULL
-            )
-        """.trimIndent()
-    )
-
     val defRegex = ".*?:؛ ج \\d*?، ص: \\d*?".toRegex()
 
     val resourcePath = "src/main/resources/"
+    val outputPath = "../app/src/main/assets"
     val wholeText = Jsoup.parse(Files.readString(Paths.get(resourcePath + "ghamus-ghoran-ghaemieh.htm"))).wholeText()
 
-    val output = FileOutputStream(resourcePath + "ghamus-ghoran-ghaemieh.txt", true).bufferedWriter()
+
+    Class.forName("org.sqlite.JDBC")
+    val connection = DriverManager.getConnection("jdbc:sqlite:$outputPath/book.db")
+    val stmt = connection.createStatement()
+    stmt.executeUpdate(
+        """
+            CREATE TABLE if NOT EXISTS Entry (
+              id INTEGER NOT NULL PRIMARY KEY autoincrement,
+              keyword TEXT,
+              definition text
+            )
+        """.trimIndent()
+    )
 
     val lines = wholeText.split("\n")
     var started = false
@@ -48,9 +48,14 @@ fun main() {
                 .trim()
             if (definition.isNotBlank()) {
                 val colIdx = definition.indexOf(":")
-                val entry = definition.substring(0, colIdx)
+                val keyword = definition.substring(0, colIdx)
                 val defText = definition.substring(colIdx + 1).trim()
-                stmt.executeUpdate("INSERT INTO definition (id, entry, definition) VALUES ( NULL, \"$entry\", \"$defText\" )")
+                try {
+                    stmt.executeUpdate("INSERT INTO Entry (id, keyword, definition) VALUES ( NULL, \"$keyword\", \"$defText\" )")
+                } catch (e: SQLiteException) {
+                    println("exception when saving: $keyword, $definition")
+                    println(e.message)
+                }
             }
 
             definitionLines.clear()
