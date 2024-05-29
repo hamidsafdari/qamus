@@ -24,6 +24,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +75,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun EntryListItem(entry: MinEntryDto) {
     val interactionSource = remember { MutableInteractionSource() }
+    val vazirFontFamily = remember {
+        FontFamily(
+            Font(R.font.vazirmatn_ui_fd_light, FontWeight.Light),
+            Font(R.font.vazirmatn_ui_fd_regular, FontWeight.Normal),
+            Font(R.font.vazirmatn_ui_fd_extralight, FontWeight.Normal, FontStyle.Italic),
+            Font(R.font.vazirmatn_ui_fd_medium, FontWeight.Medium),
+            Font(R.font.vazirmatn_ui_fd_bold, FontWeight.Bold)
+        )
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Column(Modifier
@@ -82,7 +94,8 @@ fun EntryListItem(entry: MinEntryDto) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp, 10.dp, 20.dp, 5.dp),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontFamily = vazirFontFamily
             )
             Text(
                 text = entry.definition,
@@ -91,7 +104,8 @@ fun EntryListItem(entry: MinEntryDto) {
                     .padding(20.dp, 5.dp, 20.dp, 10.dp),
                 textAlign = TextAlign.Justify,
                 maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                fontFamily = vazirFontFamily
             )
         }
     }
