@@ -5,9 +5,13 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import io.github.hamidsafdari.qamus.db.entity.Entry
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EntryDao {
+    @Query("SELECT * FROM Entry ORDER BY keyword")
+    fun findAll(): Flow<List<Entry>>
+
     @Query("SELECT COUNT(*) FROM Entry")
     suspend fun count(): Long
 
