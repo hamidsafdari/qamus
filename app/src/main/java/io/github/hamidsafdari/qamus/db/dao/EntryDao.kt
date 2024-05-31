@@ -10,6 +10,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EntryDao {
+    @Query("SELECT * FROM Entry WHERE id = :id")
+    fun findById(id: Int): Flow<Entry>
+
+    @Query("SELECT * FROM Entry WHERE keyword LIKE :keyword ORDER BY keyword")
+    fun searchByKeyword(keyword: String): List<Entry>
+
     @Query("SELECT * FROM Entry ORDER BY keyword")
     fun findAll(): Flow<List<Entry>>
 
@@ -18,9 +24,6 @@ interface EntryDao {
 
     @Query("SELECT COUNT(*) FROM Entry")
     suspend fun count(): Long
-
-    @Query("SELECT * FROM Entry WHERE keyword LIKE :keyword ORDER BY keyword")
-    fun findByKey(keyword: String): List<Entry>
 
     @Insert
     fun insertAll(vararg entries: Entry)
