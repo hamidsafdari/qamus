@@ -22,6 +22,14 @@ interface EntryDao {
     @Query("SELECT id, keyword, SUBSTRING(definition, 1, 300) as definition FROM Entry ORDER BY keyword")
     fun findAllMin(): Flow<List<MinEntryDto>>
 
+    @Query(
+        "SELECT id, keyword, SUBSTRING(definition, 1, 300) as definition " +
+                "FROM Entry " +
+                "WHERE keyword like '%' || :searchTerm || '%' " +
+                "ORDER BY keyword"
+    )
+    fun findAllMin(searchTerm: String): Flow<List<MinEntryDto>>
+
     @Query("SELECT COUNT(*) FROM Entry")
     suspend fun count(): Long
 

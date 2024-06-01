@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,9 +44,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val navController = rememberNavController()
+
             val entries by entryViewModel.entries.observeAsState(emptyList())
             val currentEntry by entryViewModel.currentEntry.observeAsState()
-            val navController = rememberNavController()
+            val searchTerm by entryViewModel.searchTerm.asLiveData().observeAsState("")
+
+            val onSearch: (String) -> Unit = { term ->
+                entryViewModel.updateSearchTerm(term)
+            }
             val onEntryItemClicked: (Int) -> Unit = { id ->
                 entryViewModel.setCurrentEntry(id)
                 navController.navigate(QamusScreen.Definition.name)
@@ -63,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = QamusScreen.EntryList.name
                     ) {
                         composable(QamusScreen.EntryList.name) {
-                            EntryList(entries, onEntryItemClicked)
+                            EntryList(entries, searchTerm, onSearch, onEntryItemClicked)
                         }
                         composable(QamusScreen.Definition.name) {
                             currentEntry?.let {

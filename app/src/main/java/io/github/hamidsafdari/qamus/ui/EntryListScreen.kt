@@ -1,17 +1,36 @@
 package io.github.hamidsafdari.qamus.ui
 
+import android.text.TextUtils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.Font
@@ -70,11 +89,69 @@ fun EntryListItem(entry: MinEntryDto, onClick: (Int) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntryList(entries: List<MinEntryDto>, onItemClick: (Int) -> Unit) {
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        itemsIndexed(entries, { _, item -> item.id }) { _, item ->
-            EntryListItem(item, onItemClick)
+fun EntryList(
+    entries: List<MinEntryDto>,
+    searchTerm: String,
+    onSearch: (String) -> Unit,
+    onItemClick: (Int) -> Unit
+) {
+    var vSearchTerm by remember { mutableStateOf(searchTerm) }
+    val entryListState = rememberLazyListState()
+
+    LaunchedEffect(key1 = vSearchTerm) {
+        if (TextUtils.isEmpty(vSearchTerm)) {
+            entryListState.scrollToItem(0)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = {
+                    Row {
+                        TextField(
+                            value = vSearchTerm,
+                            placeholder = { Text("Search...") },
+                            onValueChange = {
+                                vSearchTerm = it
+                                onSearch(it)
+                            }
+                        )
+                        IconButton(
+                            modifier = Modifier
+                                .requiredWidth(55.dp)
+                                .requiredHeight(55.dp),
+                            onClick = {
+                                vSearchTerm = ""
+                                onSearch("")
+                            }
+                        ) {
+                            Icon(
+                                modifier = Modifier.padding(8.dp),
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxWidth(),
+            state = entryListState
+        ) {
+            itemsIndexed(entries, { _, item -> item.id }) { _, item ->
+                EntryListItem(item, onItemClick)
+            }
         }
     }
 }
@@ -97,7 +174,7 @@ fun EntryListItemPreview() {
 fun EntryListPreview() {
     QamusTheme {
         EntryList(
-            listOf(
+            entries = listOf(
                 MinEntryDto(
                     1,
                     "ابّ",
@@ -109,6 +186,8 @@ fun EntryListPreview() {
                     "أَبَد: هميشه. پيوسته. اين كلمه 28 بار در قرآن مجيد بكار رفته است «مٰاكِثِينَ فِيهِ أَبَداً» كهف: 3 يعني مؤمنان در آن اجر هميشگي هستند راغب در مفردات گويد: ابد زمان مستمرّي است كه قطع نميشود و در مادّۀ «امد» گويد: ابد بمعني زمان غير محدود است.در اقرب الموارد هست كه: ابد ظرف زمان است و براي تأكيد مستقبل ميآيد نه براي دوام و استمرار آن، چنانكه قطّ و البتّه براي تأكيد زمان ماضي است گويند: «ما فعلت قطّ و البتّة و لا افعله ابدا» بنا بر اين سخن، كلمۀ ابد هميشه معناي ما قبل خود را تأكيد ميكند، بعبارت ديگر تأكيد است نه تأسيس.تدبّر در آيات قرآن مجيد خلاف اين مطلب را ميرساند و ثابت ميكند كه ابد فقط براي تأكيد نيست آياتي هست كه بوسيلۀ «ابد» از آنها دوام و هميشگي فهميده ميشود نظير «مٰاكِثِينَ فِيهِ أَبَداً» كهف: 3 «لٰا تَقُمْ فِيهِ أَبَداً» توبه: 108 «وَ لٰا أَنْ تَنْكِحُوا أَزْوٰاجَهُ مِنْ بَعْدِهِ أَبَداً» احزاب: 53 و آيات ديگر. ناگفته پيداست كه از مكث و عدم قيام و عدم تزويج زنان حضرت رسول صلّي اللّٰه عليه و آله بعد از فوتش، در صورتي دوام و استمرار فهميده ميشود كه «أَبَداً» بآنها اضافه شود و بدون آن دوام و عدم آن هر دو محتمل خواهد بود. در اين صورت «أَبَداً» براي تأسيس معناي جديدي است نه تأكيد معناي ما قبل.مخفي نماند «أَبَداً» بمعني دهر بكار رفته چنانكه در قاموس و غيره هست و نيز وصف استعمال شده چنانكه در نهج البلاغه خطبه 107 آمده: «انت الابد فلا امد لك» يعني خدايا تو دائم و هميشگي هستي و براي تو زمان محدودي نيست. در اين استعمال هم، معناي اصلي كه دوام باشد در نظر است."
                 )
             ),
+            searchTerm = "",
+            onSearch = {},
             onItemClick = {}
         )
     }

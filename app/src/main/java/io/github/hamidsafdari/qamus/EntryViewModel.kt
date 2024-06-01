@@ -10,10 +10,17 @@ import kotlinx.coroutines.launch
 class EntryViewModel(private val repository: EntryRepository) : ViewModel() {
     val entries = repository.entries.asLiveData()
     val currentEntry = repository.currentEntry.asLiveData()
+    val searchTerm = repository.entrySearchTerm
 
     fun setCurrentEntry(id: Int) {
         viewModelScope.launch {
             repository.currentEntryId.emit(id)
+        }
+    }
+
+    fun updateSearchTerm(term: String) {
+        viewModelScope.launch {
+            repository.entrySearchTerm.emit(term)
         }
     }
 
